@@ -110,6 +110,7 @@ llm_with_tools = llm.bind_tools(tools)
 
 def tool_rag(question, history):
     import re
+    global last_link
     parse_ftn = None
     link = last_link
     if "https://" in question and ".pdf" in question:
@@ -122,16 +123,17 @@ def tool_rag(question, history):
     elif "https://" in question:
         link = re.findall(r"https://.*", question)[-1]
         parse_ftn = fetch_docs
-    
+    last_link = link
+    print(link)
     if link not in retrievers:
-        docs = parse_ftn(link)
-        retriever = retriever_from_docs(docs, link)
-        retrievers[link] = retriever
-    else:
         if link is None:
             retriever = None
         else:
-            retriever = retrievers[last_link]
+            docs = parse_ftn(link)
+            retriever = retriever_from_docs(docs, link)
+            retrievers[link] = retriever
+    else:
+        retriever = retrievers[link]
     chain = prompt_template | llm | StrOutputParser()
     if retriever is not None:
         context = retriever.invoke(question)

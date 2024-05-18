@@ -17,8 +17,9 @@ text_splitter = RecursiveCharacterTextSplitter.from_language(
     chunk_size=chunk_size, chunk_overlap=int(chunk_size * 0.1), language=Language.HTML
 )
 
+chroma_instance = Chroma()
+
 def retriever_from_docs(docs, domain):
-    chroma_instance = Chroma()
     for i in range(len(docs)):
         doc = docs[i]
         if isinstance(doc, dict):
