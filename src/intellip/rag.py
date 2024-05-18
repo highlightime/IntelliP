@@ -11,8 +11,8 @@ def test():
     print('test!!')
 
 def pdfload(file):
-    path_cur = os.path.dirname(os.path.abspath(__file__))
-    path_file = path_cur + file
+    # path_cur = os.path.dirname(os.path.abspath(__file__))
+    path_file = file
     layzer = UpstageLayoutAnalysisLoader(
         path_file, use_ocr=True, output_type="html"
     )
@@ -20,6 +20,7 @@ def pdfload(file):
     docs = layzer.load()  # or layzer.lazy_load()
 
     return docs
+
 def questionWithDocs(question, docs):
     display(HTML(docs[0].page_content[:1000]))
     
@@ -36,5 +37,6 @@ def questionWithDocs(question, docs):
         """
     )
     chain = prompt_template | llm | StrOutputParser()
+    question_template = {"question": question, "Context": docs}
 
-    chain.invoke({"question": question, "Context": docs})
+    return question_template
