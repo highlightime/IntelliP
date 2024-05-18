@@ -80,6 +80,7 @@ def solar_pdf_search(query: str) -> str:
         response = requests.get(url=url, headers=headers, timeout=120)
         # Save the response content to a file
         out_path = f"data/sample/pdf/{url.split('/')[-1]}.pdf"
+        os.makedirs(os.path.dirname(out_path), makedirs=True)
         with open(out_path, 'wb') as file:
             file.write(response.content)
         return out_path
@@ -96,12 +97,12 @@ def solar_pdf_load(query: str) -> str:
     """
     # query = "data/sample/pdf/document.pdf"
 
-    print("Read sample file")
-    print(f"File downloaded at {query}")
     if not os.path.isfile(query):
+        print(f"File not found search {query} from web")
         return solar_pdf_search(query)
 
     docs = pdfload(query)
+    print(f"File downloaded at {query}")
 
     return docs
 
