@@ -20,7 +20,7 @@ import requests
 from rag import pdfload, questionWithDocs
 
 retrievers = {}
-
+last_link = None
 load_dotenv()
 
 UPSTAGE_API_KEY = os.getenv('UPSTAGE_API_KEY')
@@ -76,7 +76,8 @@ def solar_pdf_load(query: str) -> str:
     The path will end with .pdf
     """
     # query = "data/sample/pdf/document.pdf"
-
+    if query.startswith("file://"):
+        query = query[7:]
     if not os.path.isfile(query):
         print(f"File not found search {query} from web")
         return solar_pdf_search(query)
@@ -86,31 +87,37 @@ def solar_pdf_load(query: str) -> str:
 
     return docs
 
-def query_with_link(link, question):
-    if link not in retrievers:
-        docs = fetch_docs(link)
-        retriever = retriever_from_docs(docs, link)
-        retrievers[link] = retriever
-    retriever = retrievers[link]
-    return questionWithDocs(question, retriever.invoke(question))
-
 tools = [solar_pdf_search, solar_pdf_load]
 llm_with_tools = llm.bind_tools(tools)
 
 def tool_rag(question, history):
     import re
-
-    context = ""
+    parse_ftn = None
     if "https://" in question and ".pdf" in question:
-        url_link = re.findall(r"https://.*", question)[-1]
-        context += str(solar_pdf_search(url_link))
+        link = re.findall(r"https://.*", question)[-1]
+        parse_ftn = solar_pdf_search
     elif ".pdf" in question:
-        file_path = [i for i in question.split(" ") if i.endswith(".pdf")][-1]
-        context += str(solar_pdf_load(file_path))
-
+        path = [i for i in question.split(" ") if i.endswith(".pdf")][-1]
+        link = "file://" + path
+        parse_ftn = solar_pdf_load
+    elif "https://" in question:
+        link = re.findall(r"https://.*", question)[-1]
+        parse_ftn = fetch_docs
+    if link not in retrievers:
+        docs = parse_ftn(link)
+        retriever = retriever_from_docs(docs, link)
+        retrievers[link] = retriever
+    else:
+        if last_link is not None:
+            retriever = retrievers[last_link]
+        else:
+            retriever = None
     chain = prompt_template | llm | StrOutputParser()
-    print({"context": context, "question": question})
-
+    if retriever is not None:
+        context = retriever.invoke(question)
+    else:
+        context = ""
+    print(context)
     return chain.invoke({"context": context, "question": question, "history": history})
 
 def chat(message, history):

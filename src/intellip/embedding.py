@@ -11,15 +11,22 @@ from secrets import token_urlsafe
 from dotenv import load_dotenv
 load_dotenv()
 
-chunk_size = 200
+chunk_size = 1000
 embeddings_model = UpstageEmbeddings(model="solar-embedding-1-large")
 text_splitter = RecursiveCharacterTextSplitter.from_language(
-    chunk_size=chunk_size, chunk_overlap=int(chunk_size * 0.25), language=Language.HTML
+    chunk_size=chunk_size, chunk_overlap=int(chunk_size * 0.1), language=Language.HTML
 )
 
 def retriever_from_docs(docs, domain):
     chroma_instance = Chroma()
-    docs = [Document(**dict(**doc, domain=domain)) for doc in docs]
+    for i in range(len(docs)):
+        doc = docs[i]
+        if isinstance(doc, dict):
+            doc['metadata']['domain'] = domain
+            docs[i] = Document(**doc)
+        else:
+            docs[i].metadata['domain'] = domain
+        
     splits = text_splitter.split_documents(docs)
     vectorstore = chroma_instance.from_documents(
         documents=splits,

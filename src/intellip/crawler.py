@@ -142,11 +142,11 @@ def fetch_docs(url):
         two_depth_links = one_depth_fetch(links, domain, 2)
         total_links.append(two_depth_links)
         
-    # two_depth_links 하나씩 링크 꺼내서 3 depth 링크 탐색
-    for link in two_depth_links:
-        links = get_page(link)
-        three_depth_links = one_depth_fetch(links, domain, 3)
-        total_links.append(three_depth_links)
+    # # two_depth_links 하나씩 링크 꺼내서 3 depth 링크 탐색
+    # for link in two_depth_links:
+    #     links = get_page(link)
+    #     three_depth_links = one_depth_fetch(links, domain, 3)
+    #     total_links.append(three_depth_links)
     
     # 중복 링크 제거하고 flatten
     flattened_links = sum(total_links, start=[])
