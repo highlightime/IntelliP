@@ -9,10 +9,9 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, Prom
 from langchain_core.output_parsers import StrOutputParser
 from langchain.schema import AIMessage, HumanMessage
 from langchain_core.tools import tool
-from embedding import retriever_from_docs
+
 import os
 from dotenv import load_dotenv
-from crawler import fetch_docs
 
 import requests
 
@@ -21,8 +20,6 @@ from rag import pdfload, questionWithDocs
 load_dotenv()
 
 UPSTAGE_API_KEY = os.getenv('UPSTAGE_API_KEY')
-
-retrievers = {}
 
 llm = ChatUpstage(streaming=True)
 
@@ -46,33 +43,6 @@ prompt_template = PromptTemplate.from_template(
 )
 chain = chat_with_history_prompt | llm | StrOutputParser()
 
-solar_summary = """
-SOLAR 10.7B: Scaling Large Language Models with Simple yet Effective Depth Up-Scaling
-
-We introduce SOLAR 10.7B, a large language model (LLM) with 10.7 billion parameters, 
-demonstrating superior performance in various natural language processing (NLP) tasks. 
-Inspired by recent efforts to efficiently up-scale LLMs, 
-we present a method for scaling LLMs called depth up-scaling (DUS), 
-which encompasses depthwise scaling and continued pretraining.
-In contrast to other LLM up-scaling methods that use mixture-of-experts, 
-DUS does not require complex changes to train and inference efficiently. 
-We show experimentally that DUS is simple yet effective 
-in scaling up high-performance LLMs from small ones. 
-Building on the DUS model, we additionally present SOLAR 10.7B-Instruct, 
-a variant fine-tuned for instruction-following capabilities, 
-surpassing Mixtral-8x7B-Instruct. 
-SOLAR 10.7B is publicly available under the Apache 2.0 license, 
-promoting broad access and application in the LLM field.
-"""
-
-@tool
-def solar_paper_search(query: str) -> str:
-    """Query for research paper about solarllm, dus, llm and general AI.
-    If the query is about DUS, Upstage, AI related topics, use this.
-    """
-    return solar_summary
-
-@tool
 def solar_pdf_search(query: str) -> str:
     """Query for pdf link. 
     Link will be presented after the keyword PDF LINK:
@@ -96,7 +66,6 @@ def solar_pdf_search(query: str) -> str:
 
     return docs
 
-@tool
 def solar_pdf_load(query: str) -> str:
     """Query for pdf file. 
     The file's path will be presented after the keyword PDF PATH:
@@ -113,62 +82,24 @@ def solar_pdf_load(query: str) -> str:
 
     return docs
 
-@tool
-def internet_search(query: str) -> str:
-    """This is for query for internet search engine like Google.
-    Query for general topics.
-    """
-    return "Link not found"
-
-@tool
-def get_news(topic: str) -> str:
-    """Get latest news about a topic.
-    If users are more like recent news, use this.
-    """
-    # https://newsapi.org/v2/everything?q=tesla&from=2024-04-01&sortBy=publishedAt&apiKey=API_KEY
-    # change this to request news from a real API
-    news_url = f"https://newsapi.org/v2/everything?q={topic}&apiKey={os.environ['NEWS_API_KEY']}"
-    respnse = requests.get(news_url)
-    return respnse.json()
-
-def call_tool_func(tool_call):
-    tool_name = tool_call["name"].lower()
-    if tool_name not in globals():
-        print("Tool not found", tool_name)
-        return None
-    selected_tool = globals()[tool_name]
-    return selected_tool.invoke(tool_call["args"])
-
-tools = [solar_paper_search, internet_search, get_news, solar_pdf_search, solar_pdf_load]
+tools = [solar_pdf_search, solar_pdf_load]
 llm_with_tools = llm.bind_tools(tools)
 
 def tool_rag(question, history):
-    for _ in range(3): # try 3 times
-        tool_calls = llm_with_tools.invoke(question).tool_calls
-        if tool_calls:
-            break
+    import re
 
-    if not tool_calls:
-        return "I'm sorry, I don't have an answer for that."
-    
-    print(tool_calls)
     context = ""
-    for tool_call in tool_calls:
-        context += str(call_tool_func(tool_call))
-        question.replace(tool_call["args"]["query"], '')
+    if "https://" in question and ".pdf" in question:
+        url_link = re.findall(r"https://.*", question)
+        context += str(solar_pdf_search(url_link))
+    elif ".pdf" in question:
+        file_path = [i for i in question.split(" ") if i.endswith(".pdf")][-1]
+        context += str(solar_pdf_load(file_path))
 
     chain = prompt_template | llm | StrOutputParser()
     print({"context": context, "question": question})
 
     return chain.invoke({"context": context, "question": question, "history": history})
-
-def query_with_link(link, question):
-    if link not in retrievers:
-        docs = fetch_docs(link)
-        retriever = retriever_from_docs(docs, link)
-        retrievers[link] = retriever
-    retriever = retrievers[link]
-    return questionWithDocs(question, retriever.invoke(question))
 
 def chat(message, history):
     history_langchain_format = []
