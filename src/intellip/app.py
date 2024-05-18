@@ -9,9 +9,10 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, Prom
 from langchain_core.output_parsers import StrOutputParser
 from langchain.schema import AIMessage, HumanMessage
 from langchain_core.tools import tool
-
+from embedding import retriever_from_docs
 import os
 from dotenv import load_dotenv
+from crawler import fetch_docs
 
 import requests
 
@@ -20,6 +21,8 @@ from rag import pdfload, questionWithDocs
 load_dotenv()
 
 UPSTAGE_API_KEY = os.getenv('UPSTAGE_API_KEY')
+
+retrievers = {}
 
 llm = ChatUpstage(streaming=True)
 
@@ -158,6 +161,14 @@ def tool_rag(question, history):
     print({"context": context, "question": question})
 
     return chain.invoke({"context": context, "question": question, "history": history})
+
+def query_with_link(link, question):
+    if link not in retrievers:
+        docs = fetch_docs(link)
+        retriever = retriever_from_docs(docs, link)
+        retrievers[link] = retriever
+    retriever = retrievers[link]
+    return questionWithDocs(question, retriever.invoke(question))
 
 def chat(message, history):
     history_langchain_format = []

@@ -130,7 +130,6 @@ def get_content(url):
 
 def fetch_docs(url):
     total_links = []
-    url = 'https://docs.minaprotocol.com'
     o=urlparse(url)
     domain=o.netloc
     links = get_page(url)
@@ -159,7 +158,7 @@ def fetch_docs(url):
         # 컨텐츠 받기
         try:
             content = get_content(link)
-            docs.append({"metadata": {"url": link, "domain": domain}, "page_content": content})
+            docs.append({"metadata": {"url": link}, "page_content": content})
         except NotFound:
             print('Failed to fetch the article')
             pass

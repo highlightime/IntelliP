@@ -19,7 +19,7 @@ text_splitter = RecursiveCharacterTextSplitter.from_language(
 
 def retriever_from_docs(docs, domain):
     chroma_instance = Chroma()
-    docs = [Document(**doc) for doc in docs]
+    docs = [Document(**dict(**doc, domain=domain)) for doc in docs]
     splits = text_splitter.split_documents(docs)
     vectorstore = chroma_instance.from_documents(
         documents=splits,
