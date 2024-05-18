@@ -1,0 +1,8 @@
+# load env
+python-dotenv
+# langchain
+langchain-upstage
+langchain_core
+langchain
+# application
+gradio
