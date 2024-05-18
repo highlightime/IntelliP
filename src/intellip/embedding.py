@@ -16,8 +16,8 @@ embeddings_model = UpstageEmbeddings(model="solar-embedding-1-large")
 text_splitter = RecursiveCharacterTextSplitter.from_language(
     chunk_size=chunk_size, chunk_overlap=int(chunk_size * 0.1), language=Language.HTML
 )
-
-chroma_instance = Chroma()
+persist_directory = "./chroma_db"
+chroma_instance = Chroma(embedding_function=embeddings_model, persist_directory=persist_directory)
 
 def retriever_from_docs(docs, domain):
     for i in range(len(docs)):
@@ -32,5 +32,6 @@ def retriever_from_docs(docs, domain):
     vectorstore = chroma_instance.from_documents(
         documents=splits,
         embedding=embeddings_model,
+        persist_directory=persist_directory,
     )
-    return vectorstore.as_retriever(search_kwargs={"filter": {"domain": domain}})
+    vectorstore._collection.get()

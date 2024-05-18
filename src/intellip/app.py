@@ -9,7 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, Prom
 from langchain_core.output_parsers import StrOutputParser
 from langchain.schema import AIMessage, HumanMessage
 from langchain_core.tools import tool
-from embedding import retriever_from_docs
+from embedding import retriever_from_docs, chroma_instance
 from crawler import fetch_docs
 
 import os
@@ -19,7 +19,6 @@ import requests
 
 from rag import pdfload, questionWithDocs
 
-retrievers = {}
 last_link = None
 load_dotenv()
 
@@ -126,18 +125,13 @@ def tool_rag(question, history):
         link = re.findall(r"https://.*", question)[-1]
         parse_ftn = fetch_docs
     last_link = link
-    print(link)
-    if link not in retrievers:
-        if link is None:
-            retriever = None
-        else:
+    if link is not None:
+        if len(chroma_instance._collection.get(where={"domain": "https://docs.minaprotocol.com/"}, include=[])["ids"]) == 0:
             docs = parse_ftn(link)
-            retriever = retriever_from_docs(docs, link)
-            retrievers[link] = retriever
-    else:
-        retriever = retrievers[link]
-    chain = prompt_template | llm | StrOutputParser()
-    if retriever is not None:
+            retriever_from_docs(docs, link)
+        retriever = chroma_instance.as_retriever(search_kwargs={"filter": {"domain": link}})
+    
+        chain = prompt_template | llm | StrOutputParser()
         context = retriever.invoke(question)
     else:
         context = ""
@@ -170,14 +164,12 @@ with gr.Blocks() as demo:
     chatbot = gr.ChatInterface(
         chat,
         examples=[
-            "How to eat healthy?",
-            "Best Places in Korea",
-            "How to make a chatbot?",
+            "What is o1js? https://docs.minaprotocol.com/"
         ],
-        title="Solar Chatbot",
-        description="Upstage Solar Chatbot",
+        title="IntelliP Chatbot",
+        description="Closed-source chatbot that can answer questions based on the content of a specific link or file.",
     )
-    chatbot.chatbot.height = 300
+    chatbot.chatbot.height = 400
 
 if __name__ == "__main__":
     demo.launch()
