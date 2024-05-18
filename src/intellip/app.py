@@ -160,16 +160,18 @@ def chat(message, history):
 #         assistant += gen
 #         yield assistant
 
-with gr.Blocks() as demo:
-    chatbot = gr.ChatInterface(
-        chat,
-        examples=[
-            "What is o1js? https://docs.minaprotocol.com/"
-        ],
-        title="IntelliP Chatbot",
-        description="Closed-source chatbot that can answer questions based on the content of a specific link or file.",
-    )
-    chatbot.chatbot.height = 400
+def main():
+    with gr.Blocks() as demo:
+        chatbot = gr.ChatInterface(
+            chat,
+            examples=[
+                "What is o1js? https://docs.minaprotocol.com/"
+            ],
+            title="IntelliP Chatbot",
+            description="Closed-source chatbot that can answer questions based on the content of a specific link or file.",
+        )
+        chatbot.chatbot.height = 400
+    demo.launch()
 
 if __name__ == "__main__":
-    demo.launch()
+    main()

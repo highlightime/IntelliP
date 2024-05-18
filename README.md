@@ -7,4 +7,5 @@
 pdm venv create
 pdm sync
 eval $(pdm venv activate in-project)
+pdm run start
 ```

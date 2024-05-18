@@ -28,3 +28,6 @@ distribution = false
 dev = [
     "jupyter>=1.0.0",
 ]
+
+[tool.pdm.scripts]
+start = "src/intellip/app.py"
