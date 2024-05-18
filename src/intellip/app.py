@@ -80,7 +80,7 @@ def solar_pdf_search(query: str) -> str:
         response = requests.get(url=url, headers=headers, timeout=120)
         # Save the response content to a file
         out_path = f"data/sample/pdf/{url.split('/')[-1]}.pdf"
-        os.makedirs(os.path.dirname(out_path), makedirs=True)
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
         with open(out_path, 'wb') as file:
             file.write(response.content)
         return out_path
