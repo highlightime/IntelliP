@@ -12,6 +12,8 @@ from langchain.schema import AIMessage, HumanMessage
 import os
 from dotenv import load_dotenv
 
+from rag import *
+
 load_dotenv()
 
 UPSTAGE_API_KEY = os.getenv('UPSTAGE_API_KEY')
@@ -52,4 +54,6 @@ with gr.Blocks() as demo:
     )
     chatbot.chatbot.height = 300
 if __name__ == "__main__":
+    test()
+    pdfload("\pdf\kim-tse-2008.pdf")
     demo.launch()
