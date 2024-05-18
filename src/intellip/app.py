@@ -9,6 +9,8 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, Prom
 from langchain_core.output_parsers import StrOutputParser
 from langchain.schema import AIMessage, HumanMessage
 from langchain_core.tools import tool
+from embedding import retriever_from_docs
+from crawler import fetch_docs
 
 import os
 from dotenv import load_dotenv
@@ -16,6 +18,8 @@ from dotenv import load_dotenv
 import requests
 
 from rag import pdfload, questionWithDocs
+
+retrievers = {}
 
 load_dotenv()
 
@@ -81,6 +85,14 @@ def solar_pdf_load(query: str) -> str:
     print(f"File downloaded at {query}")
 
     return docs
+
+def query_with_link(link, question):
+    if link not in retrievers:
+        docs = fetch_docs(link)
+        retriever = retriever_from_docs(docs, link)
+        retrievers[link] = retriever
+    retriever = retrievers[link]
+    return questionWithDocs(question, retriever.invoke(question))
 
 tools = [solar_pdf_search, solar_pdf_load]
 llm_with_tools = llm.bind_tools(tools)
