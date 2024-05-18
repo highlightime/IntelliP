@@ -71,36 +71,37 @@ def solar_paper_search(query: str) -> str:
 
 @tool
 def solar_pdf_search(query: str) -> str:
-    """Query for pdf file link. PDF LINK:
+    """Query for pdf link. PDF LINK:
     """
-    print("Read sample file")
-    link = "https://pages.cs.wisc.edu/~remzi/OSTEP/dialogue-virtualization.pdf"
+    # query = "https://pages.cs.wisc.edu/~remzi/OSTEP/dialogue-virtualization.pdf"
 
     def get_pdf_from_url(url):
         headers = {'User-Agent': 'Mozilla/5.0 (X11; Windows; Windows x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36'}
         response = requests.get(url=url, headers=headers, timeout=120)
         # Save the response content to a file
-        with open('data/sample/pdf/document.pdf', 'wb') as file:
+        out_path = f"data/sample/pdf/{url.split('/')[-1]}.pdf"
+        with open(out_path, 'wb') as file:
             file.write(response.content)
-        return 'document.pdf'
+        return out_path
 
-    document = get_pdf_from_url(link)
-    print(f"File downloaded at {document} from link {link}")
-    print(os.path.isfile(document))
+    document = get_pdf_from_url(query)
+    print(f"File downloaded at {document} from link {query}")
     docs = pdfload(document)
 
     return docs
 
 @tool
 def solar_pdf_load(query: str) -> str:
-    """Query for pdf file. PDF PATH:
+    """Query for pdf file. File format endswith ".pdb". PDF PATH:
     """
-    print("Read sample file")
-    path = "data/sample/pdf/document.pdf"
-    print(f"File downloaded at {path}")
-    print(os.path.isfile(path))
+    # query = "data/sample/pdf/document.pdf"
 
-    docs = pdfload(path)
+    print("Read sample file")
+    print(f"File downloaded at {query}")
+    if not os.path.isfile(query):
+        return solar_pdf_search(query)
+
+    docs = pdfload(query)
 
     return docs
 
@@ -146,6 +147,7 @@ def tool_rag(question, history):
     context = ""
     for tool_call in tool_calls:
         context += str(call_tool_func(tool_call))
+        question.replace(tool_call["args"], '')
 
     chain = prompt_template | llm | StrOutputParser()
     print({"context": context, "question": question})
