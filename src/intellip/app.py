@@ -38,9 +38,11 @@ chat_with_history_prompt = ChatPromptTemplate.from_messages(
 
 prompt_template = PromptTemplate.from_template(
     """
-    You are an intelligent assistant designed to help answer questions based on the content of a specific link or file. 
+    You are an intelligent assistant designed to help answer questions based on the content of a specific link or file.
+    If the information is not in the link or file, respond with "The information is not available in the link or file.  
     Below is either the path to the file or the URL to the webpage you need to reference for your answers. 
     Please use the content of the specified resource to respond accurately to the questions asked. 
+    
     Your response should be within 5 sentences. 
     Additionally, include the location and the full sentence from which you derived the answer.
 
