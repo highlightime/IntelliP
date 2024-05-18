@@ -18,7 +18,9 @@ def pdfload(file):
     )
     # For improved memory efficiency, consider using the lazy_load method to load documents page by page.
     docs = layzer.load()  # or layzer.lazy_load()
-    print(docs)
+
+    return docs
+def questionWithDocs(question, docs):
     display(HTML(docs[0].page_content[:1000]))
     
     llm = ChatUpstage()
@@ -35,4 +37,4 @@ def pdfload(file):
     )
     chain = prompt_template | llm | StrOutputParser()
 
-    chain.invoke({"question": "What is bug classficiation?", "Context": docs})
+    chain.invoke({"question": question, "Context": docs})
