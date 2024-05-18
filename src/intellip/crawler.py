@@ -99,10 +99,15 @@ def get_content(url):
     result = re.sub(pt, "", result)
     return result
 
+class NotFound(Exception):
+    pass
+
 def get_content(url):
     response = requests.get(url)
     if response.status_code != 200:
-        raise Exception('Failed to fetch the article')
+        raise NotFound('Failed to fetch the article')
+    if 'text/html' not in response.headers['Content-Type']:
+        raise NotFound('Not a valid html page')
     soup = BeautifulSoup(response.text, 'html.parser')
     for tag in ["script", "noscript", "link", "style", "meta", "img", "svg", "path", "nav", "button", "header", "footer"]:
         for s in soup.select(tag):
@@ -122,7 +127,8 @@ def get_content(url):
     result = re.sub(pt, "", result)
     return result
 
-def main():
+
+def fetch_docs(url):
     total_links = []
     url = 'https://docs.minaprotocol.com'
     o=urlparse(url)
@@ -144,16 +150,24 @@ def main():
         total_links.append(three_depth_links)
     
     # 중복 링크 제거하고 flatten
-    flattened_links = []
-    for sublist in total_links:
-        flattened_links.extend(sublist)
+    flattened_links = sum(total_links, start=[])
     flattened_links = list(set(flattened_links)) 
     
     # 줄바꿈해서 하나씩 출력
+    docs = []
     for link in flattened_links:
-        print(link)
         # 컨텐츠 받기
-        content = get_content(link)
+        try:
+            content = get_content(link)
+            docs.append({"metadata": {"url": link, "domain": domain}, "page_content": content})
+        except NotFound:
+            print('Failed to fetch the article')
+            pass
+    return docs
+
+def main():
+    url = 'https://docs.minaprotocol.com'
+    print(fetch_docs(url))
 
 if __name__ == '__main__':
     main()

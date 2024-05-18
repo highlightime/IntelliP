@@ -24,6 +24,5 @@ def retriever_from_docs(docs, domain):
     vectorstore = chroma_instance.from_documents(
         documents=splits,
         embedding=embeddings_model,
-        collection_name=token_urlsafe(8),
     )
     return vectorstore.as_retriever(search_kwargs={"filter": {"domain": domain}})
