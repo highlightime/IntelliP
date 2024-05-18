@@ -148,7 +148,7 @@ def tool_rag(question, history):
     context = ""
     for tool_call in tool_calls:
         context += str(call_tool_func(tool_call))
-        question.replace(tool_call["args"], '')
+        question.replace(tool_call["args"]["query"], '')
 
     chain = prompt_template | llm | StrOutputParser()
     print({"context": context, "question": question})
