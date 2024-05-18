@@ -126,6 +126,7 @@ def main():
     # 줄바꿈해서 하나씩 출력
     for link in flattened_links:
         print(link)
+        # 컨텐츠 받기
         content = get_content(link)
 
 if __name__ == '__main__':
