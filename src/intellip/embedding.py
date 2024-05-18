@@ -1,5 +1,8 @@
 from langchain_upstage import UpstageEmbeddings
 from langchain.docstore.document import Document
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from langchain_chroma import Chroma
 from langchain_text_splitters import (
     Language,
