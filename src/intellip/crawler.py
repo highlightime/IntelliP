@@ -1,4 +1,5 @@
 import requests
+import bs4
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import bs4
@@ -9,6 +10,8 @@ pt = re.compile("[\x00-\x09]|[\x0b-\x1f]|[\x81\x8d\x8d\x8f\x90\x9d\xa0\u2060\uFE
 
 def get_page(url):
     response = requests.get(url)
+    if response.status_code != 200:
+        return []
     soup = BeautifulSoup(response.text, 'html.parser')
     links = []
     for link in soup.find_all('a'):
@@ -77,6 +80,29 @@ def get_content(url):
         # raise 대신 그냥 넘어가도록 수정
         print('Failed to fetch the article')
         # raise Exception('Failed to fetch the article')
+    soup = BeautifulSoup(response.text, 'html.parser')
+    for tag in ["script", "noscript", "link", "style", "meta", "img", "svg", "path", "nav", "button", "header", "footer"]:
+        for s in soup.select(tag):
+            s.decompose()
+    for tag in soup.descendants:
+        if isinstance(tag, bs4.element.Tag):
+            tag.attrs = {}
+        elif isinstance(tag, bs4.element.Comment):
+            tag.extract()
+    result = soup.prettify()
+    result = result.replace("<a>", "").replace("</a>", "")
+    result = result.replace("<div>", "").replace("</div>", "")
+    soup = BeautifulSoup(result, 'html.parser')
+
+    result = str(soup)    
+    result = re.sub(ws, "", result)
+    result = re.sub(pt, "", result)
+    return result
+
+def get_content(url):
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise Exception('Failed to fetch the article')
     soup = BeautifulSoup(response.text, 'html.parser')
     for tag in ["script", "noscript", "link", "style", "meta", "img", "svg", "path", "nav", "button", "header", "footer"]:
         for s in soup.select(tag):

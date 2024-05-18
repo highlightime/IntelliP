@@ -13,6 +13,8 @@ dependencies = [
     "langchain-upstage>=0.1.5",
     "requests>=2.31.0",
     "bs4>=0.0.2",
+    "gradio>=4.31.4",
+    "langchain>=0.2.0",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -20,3 +22,8 @@ license = {text = "MIT"}
 
 [tool.pdm]
 distribution = false
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "jupyter>=1.0.0",
+]
