@@ -1,7 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+import bs4
+import re
 
+ws = re.compile(r"^\s+", re.MULTILINE) # remove leading whitespaces
+pt = re.compile("[\x00-\x09]|[\x0b-\x1f]|[\x81\x8d\x8d\x8f\x90\x9d\xa0\u2060\uFEFF]", re.UNICODE) # remove non-printable characters
 
 def get_page(url):
     response = requests.get(url)
@@ -15,7 +19,7 @@ def parse_links(links, domain):
     parsed_links = []
     for link in links:
         # #으로 시작하는 링크는 제외
-        if link is not None and not link.startswith('#'):
+        if link is not None and not link.startswith('#') and '#' not in link:
             parsed_links.append(link)
     return parsed_links
 
@@ -67,6 +71,31 @@ def one_depth_fetch(links, domain, depth):
 
     return one_depth_links
 
+def get_content(url):
+    response = requests.get(url)
+    if response.status_code != 200:
+        # raise 대신 그냥 넘어가도록 수정
+        print('Failed to fetch the article')
+        # raise Exception('Failed to fetch the article')
+    soup = BeautifulSoup(response.text, 'html.parser')
+    for tag in ["script", "noscript", "link", "style", "meta", "img", "svg", "path", "nav", "button", "header", "footer"]:
+        for s in soup.select(tag):
+            s.decompose()
+    for tag in soup.descendants:
+        if isinstance(tag, bs4.element.Tag):
+            tag.attrs = {}
+        elif isinstance(tag, bs4.element.Comment):
+            tag.extract()
+    result = soup.prettify()
+    result = result.replace("<a>", "").replace("</a>", "")
+    result = result.replace("<div>", "").replace("</div>", "")
+    soup = BeautifulSoup(result, 'html.parser')
+
+    result = str(soup)    
+    result = re.sub(ws, "", result)
+    result = re.sub(pt, "", result)
+    return result
+
 def main():
     total_links = []
     url = 'https://docs.minaprotocol.com'
@@ -97,6 +126,7 @@ def main():
     # 줄바꿈해서 하나씩 출력
     for link in flattened_links:
         print(link)
+        content = get_content(link)
 
 if __name__ == '__main__':
     main()
