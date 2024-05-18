@@ -102,7 +102,7 @@ def tool_rag(question, history):
 
     context = ""
     if "https://" in question and ".pdf" in question:
-        url_link = re.findall(r"https://.*", question)
+        url_link = re.findall(r"https://.*", question)[-1]
         context += str(solar_pdf_search(url_link))
     elif ".pdf" in question:
         file_path = [i for i in question.split(" ") if i.endswith(".pdf")][-1]
