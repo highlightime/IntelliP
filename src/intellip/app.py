@@ -38,7 +38,25 @@ chat_with_history_prompt = ChatPromptTemplate.from_messages(
 
 prompt_template = PromptTemplate.from_template(
     """
-    Please provide answer for question from the following context. 
+    You are an intelligent assistant designed to help answer questions based on the content of a specific link or file. 
+    Below is either the path to the file or the URL to the webpage you need to reference for your answers. 
+    Please use the content of the specified resource to respond accurately to the questions asked. 
+    Your response should be within 5 sentences. 
+    Additionally, include the location and the full sentence from which you derived the answer.
+
+    LINK: <insert link here>
+    PATH: <insert file path here>
+
+    Please answer the following question based on the content of the specified resource:
+
+    <insert your question here>
+
+    Provide your answer below, including the location and the full sentence:
+
+    Answer: <your answer>
+    Location: <location in the document>
+    Full Sentence: <full sentence from the document>
+
     ---
     Question: {question}
     ---
@@ -93,6 +111,7 @@ llm_with_tools = llm.bind_tools(tools)
 def tool_rag(question, history):
     import re
     parse_ftn = None
+    link = last_link
     if "https://" in question and ".pdf" in question:
         link = re.findall(r"https://.*", question)[-1]
         parse_ftn = solar_pdf_search
@@ -103,15 +122,16 @@ def tool_rag(question, history):
     elif "https://" in question:
         link = re.findall(r"https://.*", question)[-1]
         parse_ftn = fetch_docs
+    
     if link not in retrievers:
         docs = parse_ftn(link)
         retriever = retriever_from_docs(docs, link)
         retrievers[link] = retriever
     else:
-        if last_link is not None:
-            retriever = retrievers[last_link]
-        else:
+        if link is None:
             retriever = None
+        else:
+            retriever = retrievers[last_link]
     chain = prompt_template | llm | StrOutputParser()
     if retriever is not None:
         context = retriever.invoke(question)
