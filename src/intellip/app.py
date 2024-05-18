@@ -71,7 +71,9 @@ def solar_paper_search(query: str) -> str:
 
 @tool
 def solar_pdf_search(query: str) -> str:
-    """Query for pdf link. PDF LINK:
+    """Query for pdf link. 
+    Link will be presented after the keyword PDF LINK:
+    The link will be in double quotes and starts with https:// and ends with .pdf
     """
     # query = "https://pages.cs.wisc.edu/~remzi/OSTEP/dialogue-virtualization.pdf"
 
@@ -93,7 +95,9 @@ def solar_pdf_search(query: str) -> str:
 
 @tool
 def solar_pdf_load(query: str) -> str:
-    """Query for pdf file. File format endswith ".pdb". PDF PATH:
+    """Query for pdf file. 
+    The file's path will be presented after the keyword PDF PATH:
+    The path will end with .pdf
     """
     # query = "data/sample/pdf/document.pdf"
 
