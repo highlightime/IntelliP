@@ -148,7 +148,9 @@ def tool_rag(question, history):
         context += str(call_tool_func(tool_call))
 
     chain = prompt_template | llm | StrOutputParser()
-    return chain.invoke({"context": context, "question": question})
+    print({"context": context, "question": question})
+
+    return chain.invoke({"context": context, "question": question, "history": history})
 
 def chat(message, history):
     history_langchain_format = []
@@ -157,7 +159,7 @@ def chat(message, history):
         history_langchain_format.append(AIMessage(content=ai))
 
     # return chain.invoke({"message": message, "history": history_langchain_format})
-    return tool_rag(message, history)
+    return tool_rag(message, history_langchain_format)
 
 # def chat(message, history):
 #     history_langchain_format = []
@@ -174,7 +176,7 @@ def chat(message, history):
 
 with gr.Blocks() as demo:
     chatbot = gr.ChatInterface(
-        tool_rag,
+        chat,
         examples=[
             "How to eat healthy?",
             "Best Places in Korea",
