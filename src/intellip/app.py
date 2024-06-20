@@ -96,13 +96,13 @@ def solar_pdf_load(query: str) -> str:
     """
     # query = "data/sample/pdf/document.pdf"
     if query.startswith("file://"):
-        query = query[7:]
-    if not os.path.isfile(query):
-        print(f"File not found search {query} from web")
-        return solar_pdf_search(query)
+        fname = query[7:]
+    if not os.path.isfile(fname):
+        raise ValueError(f"File {query} not found. Please provide a valid file path.")
+        # return solar_pdf_search(fname)
 
-    docs = pdfload(query)
-    print(f"File downloaded at {query}")
+    docs = pdfload(fname)
+    # print(f"File downloaded at {query}")
 
     return docs
 
@@ -165,12 +165,14 @@ def main():
         chatbot = gr.ChatInterface(
             chat,
             examples=[
-                "What is o1js? https://docs.minaprotocol.com/"
+                "What is o1js? https://docs.minaprotocol.com/",
+                "What is virtualization? data/sample/pdf/document.pdf",
+                "Explain pros and cons of scheduling policies. https://pages.cs.wisc.edu/~remzi/OSTEP/cpu-sched.pdf"
             ],
             title="IntelliP Chatbot",
             description="Closed-source chatbot that can answer questions based on the content of a specific link or file.",
         )
-        chatbot.chatbot.height = 400
+        chatbot.chatbot.height = 600
     demo.launch()
 
 if __name__ == "__main__":
