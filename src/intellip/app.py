@@ -126,7 +126,7 @@ def tool_rag(question, history):
         parse_ftn = fetch_docs
     last_link = link
     if link is not None:
-        if len(chroma_instance._collection.get(where={"domain": "https://docs.minaprotocol.com/"}, include=[])["ids"]) == 0:
+        if len(chroma_instance._collection.get(where={"domain": link}, include=[])["ids"]) == 0:
             docs = parse_ftn(link)
             retriever_from_docs(docs, link)
         retriever = chroma_instance.as_retriever(search_kwargs={"filter": {"domain": link}})
