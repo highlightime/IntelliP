@@ -1,4 +1,6 @@
 # IntelliP
+### Try IntelliP at https://sanggyu314-intellip.hf.space
+
 ## What is IntelliP?
 ### IntelliP is a chatbot where you can provide your own websites or pdf documents and have a Q&A session with Solar LLM.
 
