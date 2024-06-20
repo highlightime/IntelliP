@@ -4,7 +4,7 @@
 
 It uses the Upstage [Layout Analysis](https://www.upstage.ai/?utm_term=Document+AI&utm_content=%2Fgnb#layout%20analyzer) API to convert pdf documents into HTML files.
 
-Then, it uses the Upstage [Embeddings](https://www.upstage.ai/?utm_term=Document+AI&utm_content=%2Fgnb#Embedding%20apis) API to create embeddings for each part of the HTML file, either scraped from the web or converted from the pdf documetns.
+Then, it uses the Upstage [Embeddings](https://www.upstage.ai/?utm_term=Document+AI&utm_content=%2Fgnb#Embedding%20apis) API to create embeddings for each part of the HTML file, either scraped from the web or converted from the pdf documents.
 
 The Q&A session answers are generated using Retrieval-Augmented Generation.
 
