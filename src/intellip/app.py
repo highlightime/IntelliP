@@ -8,7 +8,6 @@ from langchain_upstage import ChatUpstage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain.schema import AIMessage, HumanMessage
-from langchain_core.tools import tool
 from embedding import retriever_from_docs, chroma_instance
 from crawler import fetch_docs
 
@@ -17,7 +16,7 @@ from dotenv import load_dotenv
 
 import requests
 
-from rag import pdfload, questionWithDocs
+from rag import pdfload
 
 last_link = None
 load_dotenv()
@@ -106,9 +105,6 @@ def solar_pdf_load(query: str) -> str:
 
     return docs
 
-tools = [solar_pdf_search, solar_pdf_load]
-llm_with_tools = llm.bind_tools(tools)
-
 def tool_rag(question, history):
     import re
     global last_link
@@ -167,7 +163,7 @@ def main():
             examples=[
                 "What is o1js? https://docs.minaprotocol.com/",
                 "What is virtualization? data/sample/pdf/document.pdf",
-                "Explain pros and cons of scheduling policies. https://pages.cs.wisc.edu/~remzi/OSTEP/cpu-sched.pdf"
+                "What is Round Robin scheduling policy? https://pages.cs.wisc.edu/~remzi/OSTEP/cpu-sched.pdf"
             ],
             title="IntelliP Chatbot",
             description="Closed-source chatbot that can answer questions based on the content of a specific link or file.",

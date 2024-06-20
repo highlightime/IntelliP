@@ -11,8 +11,6 @@ from langchain_text_splitters import (
     Language,
     RecursiveCharacterTextSplitter,
 )
-from urllib.parse import urlparse
-from secrets import token_urlsafe
 
 from dotenv import load_dotenv
 load_dotenv()
